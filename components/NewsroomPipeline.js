@@ -750,10 +750,56 @@ const NewsroomPipeline = () => {
     });
 
     const handleSubmit = async () => {
-      if (!formData.headline.trim() || !formData.pitch.trim()) {
-        alert('Please fill in both headline and story pitch before submitting');
-        return;
-      }
+  if (!formData.headline.trim() || !formData.pitch.trim()) {
+    alert('Please fill in both headline and story pitch before submitting');
+    return;
+  }
+  
+  setLoading(true);
+  
+  try {
+    // Get AI analysis first
+    const aiAnalysis = await mockJournalismAI(formData.pitch, formData.headline);
+    
+    const newStory = {
+      id: stories.length + 1,
+      headline: formData.headline,
+      pitch: formData.pitch,
+      submittedBy: currentUser?.name || 'Current User',
+      currentLevel: 2, // Start at Executive Producer level for review
+      status: 'pending',
+      newsValue: aiAnalysis?.newsValue || 7.0,
+      impact: aiAnalysis?.publicInterest?.[0] || 'Medium - affects local community',
+      bucket: 'Local Interest',
+      character: formData.character || 'Local Official or Community Leader',
+      accountabilityAngle: formData.accountability || 'Public interest and community impact',
+      timeline: aiAnalysis?.estimatedTimeline || '2-3 weeks',
+      urgencyScore: aiAnalysis?.urgencyScore || 5.0,
+      legalRisk: aiAnalysis?.legalRisk || 'MEDIUM',
+      sourceCount: formData.sources ? formData.sources.split(',').length : 1,
+      documentsNeeded: ['Initial research', 'Source interviews'],
+      competitorStatus: aiAnalysis?.competitorRisk || 'Unknown',
+      daysInPipeline: 0,
+      aiInsights: aiAnalysis?.recommendations || ['Story has local relevance'],
+      resources: aiAnalysis?.resourcesNeeded || ['Reporter time', 'Basic research'],
+      publicInterest: formData.publicInterest || aiAnalysis?.publicInterest?.[0] || 'Medium - affects local community',
+      levelHistory: [
+        { level: 1, status: 'submitted', feedback: 'Story pitch submitted by reporter', date: new Date().toISOString().split('T')[0], timeSpent: 'completed' },
+        { level: 2, status: 'pending', feedback: 'Awaiting Executive Producer review', date: new Date().toISOString().split('T')[0], timeSpent: 'ongoing' }
+      ]
+    };
+    
+    setStories([newStory, ...stories]);
+    setNewStoryForm(false);
+    setFormData({ headline: '', pitch: '', character: '', accountability: '', focus: '', publicInterest: '' });
+    setLoading(false);
+    
+  } catch (error) {
+    console.error('Error submitting story:', error);
+    setLoading(false);
+    alert('Error submitting story. Please try again.');
+  }
+};
       
       const newStory = {
         id: stories.length + 1,
