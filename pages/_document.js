@@ -4,8 +4,8 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        <link rel="icon" href="/newsflow-logo.png" />
-        <link rel="apple-touch-icon" href="/newsflow-logo.png" />
+        <link rel="icon" href="/favicon.png" />
+        <link rel="apple-touch-icon" href="/favicon.png" />
         <meta name="theme-color" content="#2563eb" />
         <meta name="description" content="AI-powered editorial workflow for journalism teams" />
       </Head>
