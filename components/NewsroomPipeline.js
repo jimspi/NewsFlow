@@ -622,21 +622,25 @@ const NewsroomPipeline = () => {
            </div>
          </div>
        </div>
-       
-       {canReview && (
-         <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-           <div className="flex items-center justify-between">
-             <div className="flex items-center space-x-2">
-               <Eye className="h-4 w-4 text-blue-600" />
-               <span className="text-sm font-medium text-blue-900">This story requires your review</span>
-             </div>
-             <button
-               onClick={(e) => {
-                 e.stopPropagation();
-                 setReviewForm(onClick={(e) => {
-                 e.stopPropagation();
-                 setReviewForm(story);
-               }}
+        {canReview && (
+          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Eye className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-900">This story requires your review</span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setReviewForm(story);
+                }}
+                className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+              >
+                Review Now
+              </button>
+            </div>
+          </div>
+        )}
                className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
              >
                Review Now
