@@ -1,0 +1,13 @@
+{
+  "name": "NewsFlow - AI Editorial Assistant",
+  "short_name": "NewsFlow",
+  "description": "Transform story materials into polished multi-format content",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0F172A",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
