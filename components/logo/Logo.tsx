@@ -8,11 +8,34 @@ function LogoIcon({ size = "md", className }: { size?: "sm" | "md" | "lg" | "xl"
   const s = sizeMap[size].h;
   return (
     <svg width={s} height={s} viewBox="0 0 64 64" fill="none" className={className}>
-      <g transform="translate(8, 8)">
-        <path d="M4 40C4 40 10 4 18 4C24 4 24 24 30 24C36 24 36 4 44 4" stroke="#3B82F6" strokeWidth="4" strokeLinecap="round" fill="none" />
-        <path d="M4 24C10 24 16 14 24 14C32 14 38 34 44 34" stroke="#06B6D4" strokeWidth="4" strokeLinecap="round" fill="none" />
-        <path d="M4 4C10 44 16 44 24 44C32 44 38 4 44 44" stroke="#1E40AF" strokeWidth="4" strokeLinecap="round" fill="none" />
-      </g>
+      <defs>
+        <radialGradient id="mic-head" cx="50%" cy="40%" r="50%">
+          <stop offset="0%" stopColor="#60A5FA" />
+          <stop offset="100%" stopColor="#1E40AF" />
+        </radialGradient>
+        <linearGradient id="mic-body" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#3B82F6" />
+          <stop offset="100%" stopColor="#1E40AF" />
+        </linearGradient>
+        <linearGradient id="mic-stand" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#1E40AF" />
+          <stop offset="100%" stopColor="#60A5FA" />
+        </linearGradient>
+      </defs>
+      {/* Microphone head (rounded top) */}
+      <ellipse cx="32" cy="18" rx="12" ry="14" fill="url(#mic-head)" />
+      {/* Mesh lines on head */}
+      <line x1="24" y1="14" x2="40" y2="14" stroke="#93C5FD" strokeWidth="0.7" opacity="0.5" />
+      <line x1="22" y1="18" x2="42" y2="18" stroke="#93C5FD" strokeWidth="0.7" opacity="0.5" />
+      <line x1="24" y1="22" x2="40" y2="22" stroke="#93C5FD" strokeWidth="0.7" opacity="0.5" />
+      {/* Body (rectangle connecting head to stand) */}
+      <rect x="26" y="30" width="12" height="10" rx="2" fill="url(#mic-body)" />
+      {/* Stand pole */}
+      <rect x="30" y="40" width="4" height="12" rx="1" fill="url(#mic-stand)" />
+      {/* Base */}
+      <ellipse cx="32" cy="54" rx="10" ry="3" fill="url(#mic-stand)" />
+      {/* Highlight/shine on head */}
+      <ellipse cx="28" cy="14" rx="3" ry="5" fill="white" opacity="0.15" />
     </svg>
   );
 }

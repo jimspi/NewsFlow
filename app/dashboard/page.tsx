@@ -1,57 +1,54 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { StoryCard } from "@/components/library/StoryCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PenSquare, Search, LayoutGrid, List, Filter, X, FileText } from "lucide-react";
+import { PenSquare, Search, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Story } from "@/lib/types";
-import { STATUS_OPTIONS, BEAT_OPTIONS } from "@/lib/utils";
+
+const STATUS_TABS = [
+  { value: "all", label: "All" },
+  { value: "draft", label: "Drafts" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "published", label: "Published" },
+  { value: "archived", label: "Archived" },
+];
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<"grid" | "list">("grid");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [beatFilter, setBeatFilter] = useState("all");
-  const [showFilters, setShowFilters] = useState(false);
   const supabase = createClient();
   const { toast } = useToast();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Debounce search input by 300ms
+  useEffect(() => {
+    debounceRef.current = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(debounceRef.current);
+  }, [search]);
 
   const fetchStories = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     let query = supabase.from("stories").select("*").eq("user_id", user.id).order("updated_at", { ascending: false });
     if (statusFilter !== "all") query = query.eq("status", statusFilter);
-    if (beatFilter !== "all") query = query.eq("beat", beatFilter);
-    if (search) query = query.ilike("headline", `%${search}%`);
+    if (debouncedSearch) query = query.ilike("headline", `%${debouncedSearch}%`);
     const { data, error } = await query;
     if (error) toast({ title: "Error loading stories", description: error.message, variant: "destructive" });
     else setStories(data || []);
     setLoading(false);
-  }, [user, supabase, statusFilter, beatFilter, search, toast]);
+  }, [user, supabase, statusFilter, debouncedSearch, toast]);
 
   useEffect(() => { fetchStories(); }, [fetchStories]);
-
-  const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("stories").delete().eq("id", id);
-    if (!error) { setStories((p) => p.filter((s) => s.id !== id)); toast({ title: "Story deleted" }); }
-  };
-
-  const handleArchive = async (id: string) => {
-    await supabase.from("stories").update({ status: "archived" }).eq("id", id);
-    fetchStories();
-    toast({ title: "Story archived" });
-  };
-
-  const activeFilters = [statusFilter, beatFilter].filter((f) => f !== "all").length;
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8">
@@ -59,36 +56,33 @@ export default function DashboardPage() {
         <div><h1 className="text-2xl font-bold">Stories</h1><p className="text-sm text-muted-foreground mt-1">{stories.length} {stories.length === 1 ? "story" : "stories"}</p></div>
         <Link href="/story/new"><Button><PenSquare className="mr-2 h-4 w-4" />New Story</Button></Link>
       </div>
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Search stories..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" /></div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={() => setShowFilters(!showFilters)} className="relative"><Filter className="h-4 w-4" />{activeFilters > 0 && <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center">{activeFilters}</span>}</Button>
-          <div className="flex border rounded-md">
-            <Button variant={view === "grid" ? "secondary" : "ghost"} size="icon" onClick={() => setView("grid")} className="rounded-r-none"><LayoutGrid className="h-4 w-4" /></Button>
-            <Button variant={view === "list" ? "secondary" : "ghost"} size="icon" onClick={() => setView("list")} className="rounded-l-none"><List className="h-4 w-4" /></Button>
-          </div>
-        </div>
+
+      {/* Search */}
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input placeholder="Search stories..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
       </div>
-      {showFilters && (
-        <div className="flex flex-wrap gap-3 mb-6 p-4 rounded-lg border bg-muted/50">
-          <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">All Status</SelectItem>{STATUS_OPTIONS.map((s) => (<SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>))}</SelectContent></Select>
-          <Select value={beatFilter} onValueChange={setBeatFilter}><SelectTrigger className="w-[140px]"><SelectValue placeholder="Beat" /></SelectTrigger><SelectContent><SelectItem value="all">All Beats</SelectItem>{BEAT_OPTIONS.map((b) => (<SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>))}</SelectContent></Select>
-          {activeFilters > 0 && <Button variant="ghost" size="sm" onClick={() => { setStatusFilter("all"); setBeatFilter("all"); }}><X className="mr-1 h-3 w-3" />Clear</Button>}
-        </div>
-      )}
+
+      {/* Status tabs */}
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {STATUS_TABS.map((tab) => (
+          <Button key={tab.value} variant={statusFilter === tab.value ? "secondary" : "ghost"} size="sm" onClick={() => setStatusFilter(tab.value)}>
+            {tab.label}
+          </Button>
+        ))}
+      </div>
+
       {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => (<div key={i} className="rounded-lg border bg-card p-5 animate-pulse"><div className="flex gap-2"><div className="h-5 w-16 bg-muted rounded-full" /><div className="h-5 w-12 bg-muted rounded-full" /></div><div className="h-5 w-full bg-muted rounded mt-3" /><div className="h-5 w-2/3 bg-muted rounded mt-2" /><div className="flex justify-between mt-4"><div className="h-5 w-20 bg-muted rounded-full" /><div className="h-4 w-16 bg-muted rounded" /></div></div>))}</div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => (<div key={i} className="rounded-lg border bg-card p-5 animate-pulse"><div className="h-3 w-16 bg-muted rounded" /><div className="h-5 w-full bg-muted rounded mt-3" /><div className="h-5 w-2/3 bg-muted rounded mt-2" /><div className="flex justify-between mt-4"><div className="h-5 w-20 bg-muted rounded-full" /><div className="h-4 w-16 bg-muted rounded" /></div></div>))}</div>
       ) : stories.length === 0 ? (
         <div className="text-center py-20">
           <FileText className="mx-auto h-12 w-12 text-muted-foreground/50" />
           <h3 className="mt-4 text-lg font-semibold">No stories found</h3>
-          <p className="mt-2 text-sm text-muted-foreground">{search || activeFilters > 0 ? "Try adjusting your search or filters." : "Create your first story to get started."}</p>
-          {!search && activeFilters === 0 && <Link href="/story/new"><Button className="mt-6"><PenSquare className="mr-2 h-4 w-4" />Create New Story</Button></Link>}
+          <p className="mt-2 text-sm text-muted-foreground">{debouncedSearch || statusFilter !== "all" ? "Try adjusting your search or filters." : "Create your first story to get started."}</p>
+          {!debouncedSearch && statusFilter === "all" && <Link href="/story/new"><Button className="mt-6"><PenSquare className="mr-2 h-4 w-4" />Create New Story</Button></Link>}
         </div>
-      ) : view === "grid" ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{stories.map((s) => (<StoryCard key={s.id} story={s} view="grid" onDelete={handleDelete} onArchive={handleArchive} />))}</div>
       ) : (
-        <div className="rounded-lg border bg-card">{stories.map((s) => (<StoryCard key={s.id} story={s} view="list" onDelete={handleDelete} onArchive={handleArchive} />))}</div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{stories.map((s) => (<StoryCard key={s.id} story={s} />))}</div>
       )}
     </div>
   );

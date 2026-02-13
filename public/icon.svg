@@ -1,8 +1,25 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="64" height="64" rx="14" fill="#0F172A"/>
-  <g transform="translate(12, 10)">
-    <path d="M4 38C4 38 10 6 18 6C24 6 24 24 30 24C36 24 36 6 42 6" stroke="#3B82F6" stroke-width="4" stroke-linecap="round" fill="none"/>
-    <path d="M4 22C10 22 16 14 22 14C28 14 34 30 40 30" stroke="#06B6D4" stroke-width="4" stroke-linecap="round" fill="none"/>
-    <path d="M4 6C10 38 16 38 22 38C28 38 34 6 42 38" stroke="#1E40AF" stroke-width="4" stroke-linecap="round" fill="none"/>
-  </g>
+  <defs>
+    <radialGradient id="mic-head" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="100%" stop-color="#1E40AF"/>
+    </radialGradient>
+    <linearGradient id="mic-body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#1E40AF"/>
+    </linearGradient>
+    <linearGradient id="mic-stand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1E40AF"/>
+      <stop offset="100%" stop-color="#60A5FA"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="32" cy="18" rx="12" ry="14" fill="url(#mic-head)"/>
+  <line x1="24" y1="14" x2="40" y2="14" stroke="#BFDBFE" stroke-width="0.7" opacity="0.4"/>
+  <line x1="22" y1="18" x2="42" y2="18" stroke="#BFDBFE" stroke-width="0.7" opacity="0.4"/>
+  <line x1="24" y1="22" x2="40" y2="22" stroke="#BFDBFE" stroke-width="0.7" opacity="0.4"/>
+  <rect x="26" y="30" width="12" height="10" rx="2" fill="url(#mic-body)"/>
+  <rect x="30" y="40" width="4" height="12" rx="1" fill="url(#mic-stand)"/>
+  <ellipse cx="32" cy="54" rx="10" ry="3" fill="url(#mic-stand)"/>
+  <ellipse cx="28" cy="14" rx="3" ry="5" fill="white" opacity="0.1"/>
 </svg>
